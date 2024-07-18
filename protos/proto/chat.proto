@@ -1,0 +1,161 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "github.com/Smile8MrBread/Chat/protos/gen/chatGrpc";
+
+
+service Chat {
+    rpc AddContact(AddContactRequest) returns (Nothing);
+    rpc DeleteContact(DeleteContactRequest) returns (Nothing);
+    rpc AllContacts(AllContactsRequest) returns (AllContactsResponse);
+    rpc IsMessaged(IsMessagedRequest) returns (Nothing);
+    rpc AllMessaged(AllMessagedRequest) returns (AllMessagedResponse);
+
+    rpc Create(CreateRequest) returns (CreateResponse);
+    rpc Delete(DeleteRequest) returns (DeleteResponse);
+    rpc Update(UpdateRequest) returns (UpdateResponse);
+    rpc ClearHistory(ClearHistoryRequest) returns (Nothing);
+    rpc AllUserChats(AllUserChatsRequest) returns (AllUserChatsResponse);
+    rpc AllChats(Nothing) returns (AllChatsResponse);
+
+    rpc CreateMessage(CreateMessageRequest) returns (CreateMessageResponse);
+    rpc UpdateMessage(UpdateMessageRequest) returns (UpdateMessageResponse);
+    rpc AllMessages(AllMessagesRequest) returns (AllMessagesResponse);
+    rpc IdentMessage(IdentMessageRequest) returns (IdentMessageResponse);
+
+    rpc IdentUser(IdentUserRequest) returns (IdentUserResponse);
+}
+
+message Nothing {}
+
+message CreateRequest {
+    string name = 1;
+    string preview = 2;
+    string avatar = 3;
+    int64 user_id = 4;
+}
+
+message CreateResponse {
+    int64 chat_id = 1;
+}
+
+message DeleteRequest {
+    int64 chat_id = 1;
+}
+
+message DeleteResponse {
+    bool is_deleted = 1;
+}
+
+message UpdateRequest {
+    string name = 1;
+    string preview = 2;
+    string avatar = 3;
+    int64 chat_id = 4;
+}
+
+message UpdateResponse {
+    bool is_updated = 1;
+}
+
+message ClearHistoryRequest {
+    int64 chat_id = 1;
+}
+
+message AllChatsResponse {
+    repeated int64 chat_ids = 1;
+}
+
+message AllUserChatsRequest {
+    int64 user_id = 1;
+}
+
+message AllUserChatsResponse {
+    repeated int64 chat_ids = 1;
+}
+
+message CreateMessageRequest {
+    string text = 1;
+//    string avatar = 2;
+    string date = 2;
+    int64 user_from = 3;
+    int64 user_to = 4;
+}
+
+message CreateMessageResponse {
+    int64 message_id = 1;
+}
+
+message UpdateMessageRequest {
+    string text = 1;
+    string avatar = 2;
+    int64 message_id = 3;
+}
+
+message UpdateMessageResponse {
+    bool is_updated = 1;
+}
+
+message AllMessagesRequest {
+    int64 user_from = 1;
+    int64 user_to = 2;
+}
+
+message AllMessagesResponse {
+    repeated int64 message_ids = 1;
+}
+
+message IdentUserRequest {
+    int64 user_id = 1;
+}
+
+message IdentUserResponse {
+    int64 user_id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string avatar = 4;
+}
+
+message AddContactRequest {
+    int64 user_id = 1;
+    int64 contact_id = 2;
+}
+
+message DeleteContactRequest {
+    int64 user_id = 1;
+    int64 deleted_id = 2;
+}
+
+message AllContactsRequest {
+    int64 user_id = 1;
+}
+
+message AllContactsResponse {
+    repeated int64 contact_ids = 1;
+}
+
+message IsMessagedRequest {
+    int64 user_id = 1;
+    int64 contact_id = 2;
+}
+
+message AllMessagedRequest {
+    int64 user_id = 1;
+}
+
+message AllMessagedResponse {
+    repeated int64 user_ids = 1;
+}
+
+message IdentMessageRequest {
+    int64 message_id = 1;
+}
+
+message  IdentMessageResponse {
+    int64 message_id = 1;
+    string text = 2;
+    string date = 3;
+    int64 user_from = 4;
+    int64 user_to = 5;
+}

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Chats</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f4f4f4;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #f4f4f4;
+            padding: 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: auto;
+        }
+
+        .sidebar nav ul li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar nav ul li a,
+        .sidebar nav ul li button {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            padding: 10px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn-logout {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .btn-logout:hover {
+            background-color: #c82333;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: transform 0.3s;
+        }
+
+        .btn-icon:focus {
+            outline: none;
+        }
+
+        .btn-icon img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .dark-mode {
+            background-color: #121212;
+            color: #fff;
+        }
+
+        .dark-mode .sidebar {
+            background-color: #1e1e1e;
+        }
+
+        .dark-mode .sidebar nav ul li a,
+        .dark-mode .sidebar nav ul li button {
+            color: #fff;
+        }
+
+        .dark-mode .btn-logout {
+            background-color: #c82333;
+        }
+
+        h2 {
+            text-align: left;
+        }
+
+        .chats-list {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .chats-list li {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .chats-list li:hover {
+            background-color: #f4f4f4;
+        }
+
+        .chats-list img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .chat-details {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .chat-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 0;
+            color: black;
+        }
+
+        .chat-last-message {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .open-chat-button {
+            margin-left: 10px;
+            border: none;
+            background: #007bff;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .open-chat-button:hover {
+            background: #0056b3;
+        }
+
+        .chat-window {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            height: 100%;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            position: relative;
+        }
+
+        .chat-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-left: 40px;
+            margin-right: 10px;
+        }
+
+        .chat-header .chat-name {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            display: flex;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .message-left {
+            align-self: flex-start;
+            background-color: #e4e6eb;
+        }
+
+        .message-right {
+            align-self: flex-end;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .message p {
+            margin: 0;
+        }
+
+        .message-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            background: white;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .message-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .message-input button {
+            margin-left: 10px;
+            border: none;
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .message-input button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+<div class="sidebar">
+    <nav>
+        <ul>
+            <li><a href="http://localhost:8080/all-chats">All Chats</a></li>
+            <li><a href="http://localhost:8080/all-groups">All Groups</a></li>
+            <li><a href="http://localhost:8080/contacts">Contacts</a></li>
+        </ul>
+    </nav>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+    <div class="user-info">
+        <img id="imgOfUser" alt="User Avatar">
+        <span id="nameOfUser">John Doe</span>
+        <button id="toggle-theme" class="btn-icon">
+            <img id="theme-icon" src="tmp/moon.svg" alt="Toggle Theme">
+        </button>
+    </div>
+</div>
+<main>
+    <h2>All Chats</h2>
+    <ul class="chats-list" id="chats-list">
+        <!-- Example chat -->
+        <!--        <li onclick="openChat('Jane Smith', 'Last message content...')">-->
+        <!--            <img src="tmp/default.jpg" alt="Chat Avatar">-->
+        <!--            <div class="chat-details">-->
+        <!--                <span class="chat-name">Jane Smith</span>-->
+        <!--                <span class="chat-last-message">Last message content...</span>-->
+        <!--            </div>-->
+        <!--        </li>-->
+    </ul>
+    <div class="chat-window" id="chat-window">
+        <div class="chat-header">
+            <button class="back-button" onclick="closeChat()">&larr;</button>
+            <img id="chatAvatar" alt="Chat Avatar">
+            <div class="chat-name" id="chat-header-name">Jane Smith</div>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="message-input">
+            <input type="text" id="message-input" placeholder="Type a message">
+            <button id="sendMessage">Send</button>
+        </div>
+    </div>
+</main>
+
+<script>
+    let id
+    let contactId
+
+    async function fetchAllMessages(id, contactId) {
+        const res = await fetch(`http://localhost:8080/allMessages/${id}/${contactId}`, {
+            method: "GET",
+        })
+        return res.json()
+    }
+
+    async function fetchIdentMessage(id) {
+        const res = await fetch(`http://localhost:8080/identMessage/${id}`, {
+            method: "GET"
+        })
+
+        return res.json()
+    }
+
+    async function fetchIdentUser(cId) {
+        const res = await fetch("http://localhost:8080/identity/" + cId, {
+            method: "GET",
+        })
+        if (res.status === 409) {
+            const js = await res.json()
+            throw new Error(js.message)
+        }
+        // .then(res => res.json())
+        // .then(res => console.log(res.user_id, res.avatar, res.first_name))
+
+        return res.json()
+    }
+
+    let socket = new WebSocket("ws://localhost:8080/ws")
+
+    function correctTransfer(str) {
+        if (str.length > 70) {
+            for (let i = 1; i < (str.length - 4 * (i - 1)) / 70; i++) {
+                str = str.slice(0, i * 70 + (i - 1) * 4) + "<br>" + str.slice(i * 70 + (i - 1) * 4)
+            }
+        }
+
+        return str
+    }
+
+    async function openChat(name, id, contactId, avatar) {
+        document.getElementById('chat-header-name').innerText = name;
+        document.getElementById('chat-window').style.display = 'flex';
+        document.getElementById('chats-list').style.display = 'none';
+        document.querySelector('h2').style.display = 'none';
+        document.getElementById("chatAvatar").src = "tmp/" + avatar
+        // Example of loading messages dynamically (to be replaced with real data)
+
+        document.getElementById("sendMessage").onclick = function () {
+            sendMessage(contactId.toString());
+        }
+
+
+        const messages = document.getElementById('messages');
+        messages.innerHTML = ""
+
+        const res = await fetchAllMessages(id, contactId)
+
+        for (let i = 0; i < res.length; i++) {
+            const msg = await fetchIdentMessage(res[i])
+
+            const m = document.createElement("div")
+            if (msg.user_from !== id) {
+                m.className = "message message-left"
+            } else {
+                m.className = "message message-right"
+            }
+
+            msg.text = await correctTransfer(msg.text)
+            m.innerHTML = `<p>${msg.text}</p>`
+            messages.appendChild(m)
+        }
+
+        messages.scrollTop = messages.scrollHeight;
+
+        socket.onmessage = (event => async function() {
+            const newMessage = document.createElement('div')
+            newMessage.className = "message message-left"
+
+            event.data = await correctTransfer(event.data)
+            newMessage.innerHTML = `<p>${event.data}</p>`
+
+            messages.appendChild(newMessage)
+        })
+        socket.onclose = (cl => console.log("Connection closed"))
+        socket.onerror = (error => console.log(error))
+    }
+
+    let params = new URLSearchParams(document.location.search.slice(1));
+
+    function closeChat() {
+        params.delete('isRelocated');
+        params.delete('id');
+
+        // Обновляем URL без параметров
+        const newUrl = "http://localhost:8080/all-chats"
+        window.history.replaceState({path: newUrl}, '', newUrl);
+
+        document.getElementById('chat-window').style.display = 'none';
+        document.getElementById('chats-list').style.display = 'block';
+        document.querySelector('h2').style.display = 'block';
+    }
+
+    async function sendMessage(c) {
+        const messageInput = document.getElementById('message-input');
+        let messageText = messageInput.value;
+        if (messageText.trim() !== '') {
+            const body = {}
+
+            body.Date = new Date().toISOString().slice(0, 19).replace('T', ' ')
+            body.UserFrom = id
+            body.UserTo = c
+            body.Text = messageText
+
+            await fetch("http://localhost:8080/createMessage", {
+                method: "POST",
+                body: JSON.stringify(body)
+            })
+
+            socket.send(JSON.stringify({
+                "From": id,
+                "To": c,
+                "Data": messageText
+            }))
+            messageText = await correctTransfer(messageText)
+
+            const messages = document.getElementById('messages');
+            const newMessage = document.createElement('div');
+            newMessage.className = 'message message-right';
+            newMessage.innerHTML = `<p>${messageText}</p>`;
+            messages.appendChild(newMessage);
+            messageInput.value = '';
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        return false
+    }
+
+    if (params.get("isRelocated")) {
+        (async function () {
+            const user = await fetchIdentUser(params.get("id"))
+            openChat(`${user.first_name} ${user.last_name}`, user.user_id)
+        })()
+    }
+
+    (async function () {
+        for (const cookie of document.cookie.split("; ")) {
+            const parts = cookie.split("=")
+            if (parts[0] === "id") {
+                id = parts[1]
+            }
+        }
+
+        const user = await fetchIdentUser(id)
+        document.getElementById("nameOfUser").innerHTML = `${user.first_name} ${user.last_name}`
+        document.getElementById("imgOfUser").src = `tmp/${user.avatar}`
+
+        const res = await fetch("http://localhost:8080/allMessaged/" + id, {
+            method: "GET"
+        })
+            .then(resp => resp.json())
+
+        const chatList = document.getElementById("chats-list")
+        for (let i = 0; i < res.user_ids.length; i++) {
+            contactId = res.user_ids[i].toString()
+            const messagedUser = await fetchIdentUser(res.user_ids[i])
+            chatList.innerHTML += `<li onclick="openChat('${messagedUser.first_name + " " + messagedUser.last_name}', ${id}, ${contactId}, '${messagedUser.avatar}')">
+                                    <img src="tmp/${messagedUser.avatar}" alt="Chat Avatar">
+                                    <div class="chat-details">
+                                        <span class="chat-name">${messagedUser.first_name + " " + messagedUser.last_name}</span>
+                                        <span class="chat-last-message">Last message content...</span>
+                                    </div>
+                                </li>`
+        }
+    })()
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+
+        if (isDarkMode) {
+            body.classList.add('dark-mode');
+            themeIcon.src = 'tmp/sun.svg';
+        } else {
+            themeIcon.src = 'tmp/moon.svg';
+        }
+
+        document.getElementById('toggle-theme').addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDarkMode = body.classList.contains('dark-mode');
+            themeIcon.src = isDarkMode ? 'tmp/sun.svg' : 'tmp/moon.svg';
+            localStorage.setItem('dark-mode', isDarkMode);
+        });
+    });
+
+    function logout() {
+        document.cookie = "token=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"
+        document.cookie = "id=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"
+        window.location.replace("http://localhost:8080/");
+    }
+</script>
+</body>
+
+</html>

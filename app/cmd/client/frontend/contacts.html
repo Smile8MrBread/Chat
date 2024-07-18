@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f4f4f4;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #f4f4f4;
+            padding: 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: auto;
+        }
+
+        .sidebar nav ul li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar nav ul li a,
+        .sidebar nav ul li button {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            padding: 10px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn-logout {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 0.9em;
+            margin-top: 155%;
+        }
+
+        .btn-logout:hover {
+            background-color: #c82333;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: transform 0.3s;
+        }
+
+        .btn-icon:focus {
+            outline: none;
+        }
+
+        .btn-icon img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dark-mode {
+            background-color: #121212;
+            color: #fff;
+        }
+
+        .dark-mode .sidebar {
+            background-color: #1e1e1e;
+        }
+
+        .dark-mode .sidebar nav ul li a,
+        .dark-mode .sidebar nav ul li button {
+            color: #fff;
+        }
+
+        .dark-mode .btn-logout {
+            background-color: #c82333;
+        }
+
+        .contact-form {
+            display: flex;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .contact-form input {
+            flex: 1;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .contact-form #submit {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .contact-form #submit:hover {
+            background-color: #0056b3;
+        }
+
+        .contacts-list {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .contacts-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .contacts-list img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .contacts-list .contact-details {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .contacts-list .contact-name {
+            margin-right: auto;
+            font-size: 1em;
+            font-weight: bold;
+            color: black;
+        }
+
+        .contacts-list button {
+            margin-left: 10px;
+            border: none;
+            background: #007bff;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .contacts-list button:hover {
+            background: #0056b3;
+        }
+
+        .contacts-list .btn-danger {
+            background: #dc3545;
+        }
+
+        .contacts-list .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .centered-text {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="sidebar">
+    <nav>
+        <ul>
+            <li><a href="http://localhost:8080/all-chats">All Chats</a></li>
+            <li><a href="http://localhost:8080/all-groups">All Groups</a></li>
+            <li><a href="http://localhost:8080/contacts">Contacts</a></li>
+        </ul>
+    </nav>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+    <div class="user-info">
+        <img id="imgOfUser" src="tmp/default.jpg" alt="User Avatar">
+        <span id="nameOfUser">John Doe</span>
+        <button id="toggle-theme" class="btn-icon">
+            <img id="theme-icon" src="tmp/moon.svg" alt="Toggle Theme">
+        </button>
+    </div>
+</div>
+<main>
+    <div class="centered-text">
+        <h2>Contacts</h2>
+        <p>Your User ID: <span id="user-id">12345</span></p>
+    </div>
+    <div id="errReturner" style="color: red"></div>
+    <form id="form" class="contact-form">
+        <input type="number" name="conId" id="conId" placeholder="Enter Contact ID">
+        <input type="submit" id="submit" value="Add Contact">
+    </form>
+    <div id="errNoContacts"></div>
+    <ul class="contacts-list" id="contacts-list">
+        <!-- Example contact -->
+<!--        <li>-->
+<!--            <div class="contact-details">-->
+<!--                <img src="tmp/default.jpg" alt="Contact Avatar">-->
+<!--                <span class="contact-name">Jane Smith</span>-->
+<!--            </div>-->
+<!--            <div>-->
+<!--                <button class="btn btn-primary" onclick="messageContact()">Message</button>-->
+<!--                <button class="btn btn-danger" onclick="removeContact(this)">Remove</button>-->
+<!--            </div>-->
+<!--        </li>-->
+    </ul>
+</main>
+
+<script>
+    let id
+    async function fetchIdentUser(cId) {
+        const res = await fetch("http://localhost:8080/identity/" + cId, {
+            method: "GET",
+        })
+        if (res.status === 409) {
+            const js = await res.json()
+            throw new Error(js.message)
+        }
+        // .then(res => res.json())
+        // .then(res => console.log(res.user_id, res.avatar, res.first_name))
+
+        return res.json()
+    }
+
+    (async function() {
+        for (const cookie of document.cookie.split("; ")) {
+            const parts = cookie.split("=")
+            if (parts[0] === "id") {
+                id = parts[1]
+            }
+        }
+        let user = await fetchIdentUser(id)
+        document.getElementById("nameOfUser").innerHTML = `${user.first_name} ${user.last_name}`
+        document.getElementById("imgOfUser").src = `tmp/${user.avatar}`
+        document.getElementById("user-id").innerHTML = user.user_id
+    })()
+    document.addEventListener('DOMContentLoaded', () => {
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+
+        if (isDarkMode) {
+            body.classList.add('dark-mode');
+            themeIcon.src = 'tmp/sun.svg';
+        } else {
+            themeIcon.src = 'tmp/moon.svg';
+        }
+
+        document.getElementById('toggle-theme').addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDarkMode = body.classList.contains('dark-mode');
+            themeIcon.src = isDarkMode ? 'tmp/sun.svg' : 'tmp/moon.svg';
+            localStorage.setItem('dark-mode', isDarkMode);
+        });
+    });
+
+    function logout() {
+        document.cookie = "token=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"
+        document.cookie = "id=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"
+        window.location.replace("http://localhost:8080/");
+    }
+
+    const body = {}
+    const form = document.getElementById("form")
+
+    async function fetchAddContact() {
+        const res = await fetch("http://localhost:8080/addContact", {
+            method: "POST",
+            body: new FormData(form),
+        })
+        if (res.status === 409) {
+            const js = await res.json()
+            throw new Error(js.message)
+        }
+    }
+
+    let contactId = 0
+
+    async function fetchAllContacts() {
+        const res = await fetch("http://localhost:8080/allContacts", {
+            method: "GET"
+        })
+        if (res.status === 406) {
+            const err = document.getElementById("errNoContacts")
+            err.innerHTML = "You don't have any contacts!"
+        }
+
+        return res.json()
+    }
+
+    function addLi(user) {
+        const contactsList = document.getElementById('contacts-list');
+        const newLi = document.createElement('li');
+        newLi.innerHTML = `
+                    <div class="contact-details">
+                        <img src="tmp/${user.avatar}" alt="Contact Avatar">
+                        <span class="contact-name">${user.first_name + " " + user.last_name}</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="messageContact(${user.user_id}, '${user.first_name} ${user.last_name}')">Message</button>
+                        <button class="btn btn-danger" onclick="removeContact(this)">Remove</button>
+                    </div>
+                `;
+        contactsList.appendChild(newLi);
+    }
+
+    (async function() {
+        const res = await fetchAllContacts()
+        for(let i = 0; i < res.contact_ids.length; i++) {
+            const user = await fetchIdentUser(res.contact_ids[i])
+            addLi(user)
+        }
+    })()
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault()
+        const err = document.getElementById("errReturner")
+        const errContacts = document.getElementById("errNoContacts")
+
+        const conId = document.getElementById("conId");
+
+        try {
+            errContacts.innerHTML = ""
+            contactId = conId.value
+
+            if (contactId === id) {
+                throw new Error("You can't add yourself")
+            }
+            await fetchAddContact()
+
+            const user = await fetchIdentUser(contactId)
+            addLi(user)
+
+            conId.value = '';
+            err.innerHTML = ""
+
+
+        } catch (error) {
+            err.innerHTML = error.message
+            console.log(error)
+        }
+    })
+
+    function removeContact(button) {
+        button.closest('li').remove();
+    }
+
+    function messageContact(id, name) {
+        (async function () {
+           await fetch("http://localhost:8080/isMessaged/" + id, {
+               method: "GET"
+           })
+               .catch(err => {
+                   console.log(err)
+               })
+
+            window.location.replace("http://localhost:8080/all-chats?isRelocated=true&id=" + id)
+        })()
+    }
+</script>
+</body>
+
+</html>

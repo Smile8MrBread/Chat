@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/Smile8MrBread/Chat/protos/gen/authGrpc";
+
+service Auth {
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc Registration(RegisterRequest) returns (RegisterResponse);
+}
+
+message LoginRequest {
+    string login = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    string token = 1;
+}
+
+message RegisterRequest {
+    string first_name = 1;
+    string last_name = 2;
+    string login = 3;
+    string password = 4;
+    string avatar = 5;
+}
+
+message RegisterResponse {
+    int64 user_id = 1;
+}

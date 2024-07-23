@@ -2,9 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/websocket"
-	"io"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -46,16 +44,6 @@ func NewHub(log *slog.Logger) *Hub {
 	}
 }
 
-//func (s *Server) HandleOrderBook(ws *websocket.Conn) {
-//	s.log.Info("New incoming connection from order book: ", ws.RemoteAddr())
-//
-//	for {
-//		d := fmt.Sprintf("Order book data => %s", time.Now().Format("2006-01-02T15:04:05 -07:00:00"))
-//		ws.Write([]byte(d))
-//		time.Sleep(time.Second * 2)
-//	}
-//}
-
 func (h *Hub) Run() {
 	for {
 		select {
@@ -63,17 +51,28 @@ func (h *Hub) Run() {
 			h.Lock()
 			h.conns[conn] = true
 			h.Unlock()
+			h.log.Info("Connection registered user: " + conn.userId)
+
 		case conn := <-h.unregister:
-			if h.conns[conn] {
-				h.Lock()
+			h.Lock()
+			if _, ok := h.conns[conn]; ok {
 				delete(h.conns, conn)
 				close(conn.send)
-				h.Unlock()
+				h.log.Info("Connection unregistered user: " + conn.userId)
 			}
+			h.Unlock()
+
 		case message := <-h.broadcast:
+			h.Lock()
 			for conn := range h.conns {
-				conn.send <- message
+				select {
+				case conn.send <- message:
+				default:
+					close(conn.send)
+					delete(h.conns, conn)
+				}
 			}
+			h.Unlock()
 		}
 	}
 }
@@ -87,66 +86,57 @@ func (c *Connection) readLoop(h *Hub) {
 	for {
 		_, message, err := c.ws.ReadMessage()
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			h.log.Error("Failed to read message", err)
+			h.log.Error("Failed to read message " + err.Error())
 			break
 		}
 
 		var msg Message
 		if err = json.Unmarshal(message, &msg); err != nil {
-			h.log.Error("Failed to read message", err)
-			break
+			h.log.Error("Failed to unmarshal message " + err.Error())
+			continue
 		}
 
-		fmt.Println(msg)
+		h.log.Info("Message received from " + msg.From + " to " + msg.To + " data: " + msg.Data)
+
 		for conn := range h.conns {
 			if conn.userId == msg.To {
-				conn.send <- []byte(msg.Data)
-				break
+				select {
+				case conn.send <- []byte(msg.Data):
+				default:
+					close(conn.send)
+					delete(h.conns, conn)
+				}
 			}
 		}
-
-		//h.broadcast <- []byte(msg.Data)
 	}
 }
 
 func (c *Connection) writeLoop(h *Hub) {
 	for msg := range c.send {
+		h.log.Info("Writing message to " + c.userId + " data: " + string(msg))
 		if err := c.ws.WriteMessage(websocket.TextMessage, msg); err != nil {
-			h.log.Error("Failed to write message", err)
+			h.log.Error("Failed to write message " + err.Error())
 			break
 		}
 	}
 }
 
-//func (s *Server) HandleWs(ws *websocket.Conn, id int) {
-//	s.log.Info("New incoming connection from client: ", ws.RemoteAddr())
-//
-//	s.Lock()
-//	s.conns[id] = ws
-//	s.Unlock()
-//
-//	s.readLoop(ws)
-//}
-
 func (h *Hub) HandlerWS(w http.ResponseWriter, r *http.Request) {
 	h.log.Info("Reg new connection")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		h.log.Error("Failed to reg new connection", err)
+		h.log.Error("Failed to upgrade connection " + err.Error())
 		return
 	}
 
 	id, err := r.Cookie("id")
 	if err != nil {
-		h.log.Error("Failed to parse cookie", err)
+		h.log.Error("Failed to get cookie " + err.Error())
 		return
 	}
 
 	c := &Connection{
-		send:   make(chan []byte),
+		send:   make(chan []byte, 256),
 		ws:     conn,
 		userId: id.Value,
 	}

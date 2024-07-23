@@ -22,7 +22,8 @@ type GRPCConfig struct {
 
 func mustLoadPath(configPath string) *Config {
 	if _, err := os.Stat(configPath); err != nil {
-		panic("Config does not exist on: " + configPath)
+		e, _ := os.Executable()
+		panic("Config does not exist on: " + e + configPath)
 	}
 
 	var cfg Config

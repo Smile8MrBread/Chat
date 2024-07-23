@@ -58,7 +58,7 @@ func (a *App) IdentUser(ctx context.Context, id int64) (models.User, error) {
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			log.Error("User not found", err)
-			return models.User{}, ErrUserNotFound
+			return models.User{}, fmt.Errorf("%s:%w", op, ErrUserNotFound)
 		}
 
 		log.Error("Failed to get user", slog.String("error", err.Error()))
@@ -73,7 +73,13 @@ func (a *App) AddContact(ctx context.Context, id, contactId int64) error {
 	log := a.log.With(slog.String("op", op), slog.Int64("userId", id))
 	log.Info("Adding contact")
 
-	err := a.workerContacts.AddContact(ctx, id, contactId)
+	_, err := a.userIdent.IdentUser(ctx, contactId)
+	if errors.Is(err, storage.ErrUserNotFound) {
+		log.Error("Failed to add contact", err)
+		return fmt.Errorf("%s:%w", op, ErrUserNotFound)
+	}
+
+	err = a.workerContacts.AddContact(ctx, id, contactId)
 	if err != nil {
 		log.Error("Failed to add contact", err)
 		return fmt.Errorf("%s: %w", op, err)
@@ -91,7 +97,7 @@ func (a *App) AllContacts(ctx context.Context, id int64) ([]int64, error) {
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			log.Error("No users", err)
-			return nil, ErrUserNotFound
+			return nil, fmt.Errorf("%s:%w", op, ErrUserNotFound)
 		}
 
 		log.Error("Failed to get all contacts", err)
@@ -110,7 +116,7 @@ func (a *App) IsMessaged(ctx context.Context, id, contactId int64) error {
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			log.Error("Failed to messaged", slog.String("error", err.Error()))
-			return ErrUserNotFound
+			return fmt.Errorf("%s:%w", op, ErrUserNotFound)
 		}
 
 		log.Error("Failed to messaged", slog.String("error", err.Error()))
@@ -129,7 +135,7 @@ func (a *App) AllMessaged(ctx context.Context, id int64) ([]int64, error) {
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			log.Error("Failed to get all messaged", slog.String("error", err.Error()))
-			return nil, ErrUserNotFound
+			return nil, fmt.Errorf("%s:%w", op, ErrUserNotFound)
 		}
 
 		log.Error("Failed to get all messaged", slog.String("error", err.Error()))
@@ -179,7 +185,7 @@ func (a *App) AllMessages(ctx context.Context, userFrom, userTo int64) ([]int64,
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			log.Error("User not found", slog.String("error", err.Error()))
-			return nil, ErrUserNotFound
+			return nil, fmt.Errorf("%s:%w", op, ErrUserNotFound)
 		}
 
 		log.Error("Failed to get all messages", slog.String("error", err.Error()))

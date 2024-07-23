@@ -59,7 +59,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             font-size: 0.9em;
-            margin-bottom: 10px;
+            width: 100%;
         }
 
         .btn-logout:hover {
@@ -96,6 +96,10 @@
             height: 40px;
             border-radius: 50%;
             margin-right: 10px;
+        }
+
+        .user-info span {
+            margin: auto;
         }
 
         main {
@@ -304,30 +308,23 @@
     <nav>
         <ul>
             <li><a href="http://localhost:8080/all-chats">All Chats</a></li>
-            <li><a href="http://localhost:8080/all-groups">All Groups</a></li>
+            <!--           <li><a href="http://localhost:8080/all-groups">All Groups</a></li>!-->
             <li><a href="http://localhost:8080/contacts">Contacts</a></li>
         </ul>
+        <button class="btn-logout" onclick="logout()">Logout</button>
     </nav>
-    <button class="btn-logout" onclick="logout()">Logout</button>
     <div class="user-info">
         <img id="imgOfUser" alt="User Avatar">
         <span id="nameOfUser">John Doe</span>
-        <button id="toggle-theme" class="btn-icon">
+        <!-- <button id="toggle-theme" class="btn-icon">
             <img id="theme-icon" src="tmp/moon.svg" alt="Toggle Theme">
-        </button>
+        </button> !-->
     </div>
 </div>
 <main>
     <h2>All Chats</h2>
     <ul class="chats-list" id="chats-list">
-        <!-- Example chat -->
-        <!--        <li onclick="openChat('Jane Smith', 'Last message content...')">-->
-        <!--            <img src="tmp/default.jpg" alt="Chat Avatar">-->
-        <!--            <div class="chat-details">-->
-        <!--                <span class="chat-name">Jane Smith</span>-->
-        <!--                <span class="chat-last-message">Last message content...</span>-->
-        <!--            </div>-->
-        <!--        </li>-->
+
     </ul>
     <div class="chat-window" id="chat-window">
         <div class="chat-header">
@@ -346,6 +343,15 @@
 <script>
     let id
     let contactId
+
+    (async function () {
+        for (const cookie of document.cookie.split("; ")) {
+            const parts = cookie.split("=")
+            if (parts[0] === "id") {
+                id = parts[1]
+            }
+        }
+    })()
 
     async function fetchAllMessages(id, contactId) {
         const res = await fetch(`http://localhost:8080/allMessages/${id}/${contactId}`, {
@@ -400,7 +406,6 @@
             sendMessage(contactId.toString());
         }
 
-
         const messages = document.getElementById('messages');
         messages.innerHTML = ""
 
@@ -408,9 +413,8 @@
 
         for (let i = 0; i < res.length; i++) {
             const msg = await fetchIdentMessage(res[i])
-
             const m = document.createElement("div")
-            if (msg.user_from !== id) {
+            if (msg.user_from.toString() !== id.toString()) {
                 m.className = "message message-left"
             } else {
                 m.className = "message message-right"
@@ -423,7 +427,7 @@
 
         messages.scrollTop = messages.scrollHeight;
 
-        socket.onmessage = (event => async function() {
+        socket.onmessage = async function (event) {
             const newMessage = document.createElement('div')
             newMessage.className = "message message-left"
 
@@ -431,9 +435,20 @@
             newMessage.innerHTML = `<p>${event.data}</p>`
 
             messages.appendChild(newMessage)
-        })
-        socket.onclose = (cl => console.log("Connection closed"))
-        socket.onerror = (error => console.log(error))
+        }
+
+        socket.onopen = function () {
+            console.log("Connection established");
+        };
+        socket.onclose = function (event) {
+            if (event.wasClean) {
+                console.log(`Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+            } else {
+                console.log('Connection died');
+            }
+        };
+
+        socket.onerror = (error => console.log(error.message))
     }
 
     let params = new URLSearchParams(document.location.search.slice(1));
@@ -489,17 +504,11 @@
     if (params.get("isRelocated")) {
         (async function () {
             const user = await fetchIdentUser(params.get("id"))
-            openChat(`${user.first_name} ${user.last_name}`, user.user_id)
+            openChat(`${user.first_name} ${user.last_name}`, id, user.user_id, user.avatar)
         })()
     }
 
     (async function () {
-        for (const cookie of document.cookie.split("; ")) {
-            const parts = cookie.split("=")
-            if (parts[0] === "id") {
-                id = parts[1]
-            }
-        }
 
         const user = await fetchIdentUser(id)
         document.getElementById("nameOfUser").innerHTML = `${user.first_name} ${user.last_name}`
@@ -525,25 +534,25 @@
     })()
 
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const themeIcon = document.getElementById('theme-icon');
-        const body = document.body;
-        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
-
-        if (isDarkMode) {
-            body.classList.add('dark-mode');
-            themeIcon.src = 'tmp/sun.svg';
-        } else {
-            themeIcon.src = 'tmp/moon.svg';
-        }
-
-        document.getElementById('toggle-theme').addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            const isDarkMode = body.classList.contains('dark-mode');
-            themeIcon.src = isDarkMode ? 'tmp/sun.svg' : 'tmp/moon.svg';
-            localStorage.setItem('dark-mode', isDarkMode);
-        });
-    });
+    // document.addEventListener('DOMContentLoaded', () => {
+    //     const themeIcon = document.getElementById('theme-icon');
+    //     const body = document.body;
+    //     const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+    //
+    //     if (isDarkMode) {
+    //         body.classList.add('dark-mode');
+    //         themeIcon.src = 'tmp/sun.svg';
+    //     } else {
+    //         themeIcon.src = 'tmp/moon.svg';
+    //     }
+    //
+    //     document.getElementById('toggle-theme').addEventListener('click', () => {
+    //         body.classList.toggle('dark-mode');
+    //         const isDarkMode = body.classList.contains('dark-mode');
+    //         themeIcon.src = isDarkMode ? 'tmp/sun.svg' : 'tmp/moon.svg';
+    //         localStorage.setItem('dark-mode', isDarkMode);
+    //     });
+    // });
 
     function logout() {
         document.cookie = "token=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"

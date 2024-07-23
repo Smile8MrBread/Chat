@@ -1,4 +1,4 @@
-env: "local"
+env: "dev"
 storage_path: "app/storage/app.sqlite3"
 token_ttl: 1h
 authGRPC:

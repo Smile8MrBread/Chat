@@ -200,7 +200,6 @@ func (s *Storage) AllMessaged(ctx context.Context, id int64) ([]int64, error) {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
 
-		fmt.Println(n)
 		if !occured[n] {
 			users = append(users, n)
 			occured[n] = true
@@ -222,14 +221,12 @@ func (s *Storage) AllMessaged(ctx context.Context, id int64) ([]int64, error) {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
 
-		fmt.Println(n)
 		if !occured[n] {
 			users = append(users, n)
 			occured[n] = true
 		}
 	}
 
-	fmt.Println(users)
 	return users, nil
 }
 

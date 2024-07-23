@@ -59,7 +59,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             font-size: 0.9em;
-            margin-top: 155%;
+            width: 100%;
         }
 
         .btn-logout:hover {
@@ -96,6 +96,10 @@
             height: 40px;
             border-radius: 50%;
             margin-right: 10px;
+        }
+
+        .user-info span {
+            margin: auto;
         }
 
         main {
@@ -226,17 +230,17 @@
     <nav>
         <ul>
             <li><a href="http://localhost:8080/all-chats">All Chats</a></li>
-            <li><a href="http://localhost:8080/all-groups">All Groups</a></li>
+            <!--            <li><a href="http://localhost:8080/all-groups">All Groups</a></li>!-->
             <li><a href="http://localhost:8080/contacts">Contacts</a></li>
         </ul>
+        <button class="btn-logout" onclick="logout()">Logout</button>
     </nav>
-    <button class="btn-logout" onclick="logout()">Logout</button>
     <div class="user-info">
         <img id="imgOfUser" src="tmp/default.jpg" alt="User Avatar">
         <span id="nameOfUser">John Doe</span>
-        <button id="toggle-theme" class="btn-icon">
+        <!-- <button id="toggle-theme" class="btn-icon">
             <img id="theme-icon" src="tmp/moon.svg" alt="Toggle Theme">
-        </button>
+        </button> !-->
     </div>
 </div>
 <main>
@@ -246,27 +250,17 @@
     </div>
     <div id="errReturner" style="color: red"></div>
     <form id="form" class="contact-form">
-        <input type="number" name="conId" id="conId" placeholder="Enter Contact ID">
+        <input type="number" name="conId" id="conId" placeholder="Enter Contact ID" required>
         <input type="submit" id="submit" value="Add Contact">
     </form>
     <div id="errNoContacts"></div>
     <ul class="contacts-list" id="contacts-list">
-        <!-- Example contact -->
-<!--        <li>-->
-<!--            <div class="contact-details">-->
-<!--                <img src="tmp/default.jpg" alt="Contact Avatar">-->
-<!--                <span class="contact-name">Jane Smith</span>-->
-<!--            </div>-->
-<!--            <div>-->
-<!--                <button class="btn btn-primary" onclick="messageContact()">Message</button>-->
-<!--                <button class="btn btn-danger" onclick="removeContact(this)">Remove</button>-->
-<!--            </div>-->
-<!--        </li>-->
     </ul>
 </main>
 
 <script>
     let id
+
     async function fetchIdentUser(cId) {
         const res = await fetch("http://localhost:8080/identity/" + cId, {
             method: "GET",
@@ -275,13 +269,11 @@
             const js = await res.json()
             throw new Error(js.message)
         }
-        // .then(res => res.json())
-        // .then(res => console.log(res.user_id, res.avatar, res.first_name))
 
         return res.json()
     }
 
-    (async function() {
+    (async function () {
         for (const cookie of document.cookie.split("; ")) {
             const parts = cookie.split("=")
             if (parts[0] === "id") {
@@ -293,25 +285,25 @@
         document.getElementById("imgOfUser").src = `tmp/${user.avatar}`
         document.getElementById("user-id").innerHTML = user.user_id
     })()
-    document.addEventListener('DOMContentLoaded', () => {
-        const themeIcon = document.getElementById('theme-icon');
-        const body = document.body;
-        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+    // document.addEventListener('DOMContentLoaded', () => {
+    //     const themeIcon = document.getElementById('theme-icon');
+    //     const body = document.body;
+    //     const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+    //
+    //     if (isDarkMode) {
+    //         body.classList.add('dark-mode');
+    //         themeIcon.src = 'tmp/sun.svg';
+    //     } else {
+    //         themeIcon.src = 'tmp/moon.svg';
+    //     }
 
-        if (isDarkMode) {
-            body.classList.add('dark-mode');
-            themeIcon.src = 'tmp/sun.svg';
-        } else {
-            themeIcon.src = 'tmp/moon.svg';
-        }
-
-        document.getElementById('toggle-theme').addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            const isDarkMode = body.classList.contains('dark-mode');
-            themeIcon.src = isDarkMode ? 'tmp/sun.svg' : 'tmp/moon.svg';
-            localStorage.setItem('dark-mode', isDarkMode);
-        });
-    });
+        // document.getElementById('toggle-theme').addEventListener('click', () => {
+        //     body.classList.toggle('dark-mode');
+        //     const isDarkMode = body.classList.contains('dark-mode');
+        //     themeIcon.src = isDarkMode ? 'tmp/sun.svg' : 'tmp/moon.svg';
+        //     localStorage.setItem('dark-mode', isDarkMode);
+        // });
+    // });
 
     function logout() {
         document.cookie = "token=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"
@@ -356,16 +348,16 @@
                         <span class="contact-name">${user.first_name + " " + user.last_name}</span>
                     </div>
                     <div>
-                        <button class="btn btn-primary" onclick="messageContact(${user.user_id}, '${user.first_name} ${user.last_name}')">Message</button>
+                        <button class="btn btn-primary" onclick="messageContact(${user.user_id})">Message</button>
                         <button class="btn btn-danger" onclick="removeContact(this)">Remove</button>
                     </div>
                 `;
         contactsList.appendChild(newLi);
     }
 
-    (async function() {
+    (async function () {
         const res = await fetchAllContacts()
-        for(let i = 0; i < res.contact_ids.length; i++) {
+        for (let i = 0; i < res.contact_ids.length; i++) {
             const user = await fetchIdentUser(res.contact_ids[i])
             addLi(user)
         }
@@ -404,14 +396,14 @@
         button.closest('li').remove();
     }
 
-    function messageContact(id, name) {
+    function messageContact(id) {
         (async function () {
-           await fetch("http://localhost:8080/isMessaged/" + id, {
-               method: "GET"
-           })
-               .catch(err => {
-                   console.log(err)
-               })
+            await fetch("http://localhost:8080/isMessaged/" + id, {
+                method: "GET"
+            })
+                .catch(err => {
+                    console.log(err)
+                })
 
             window.location.replace("http://localhost:8080/all-chats?isRelocated=true&id=" + id)
         })()

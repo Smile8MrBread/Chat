@@ -1,0 +1,66 @@
+version: '3'
+
+services:
+  auth:
+    build:
+      context: .
+      dockerfile: app/cmd/services/auth/Dockerfile
+    volumes:
+      - db-data:/app/storage
+    expose:
+      - "32100"
+    depends_on:
+      - storage
+    networks:
+      - network
+    environment:
+      - CONFIG=/config/config.yaml
+
+  chat:
+    build:
+      context: .
+      dockerfile: app/cmd/services/chat/Dockerfile
+    volumes:
+      - db-data:/app/storage
+    expose:
+      - "32200"
+    depends_on:
+      - storage
+    networks:
+      - network
+    environment:
+      - CONFIG=/config/config.yaml
+
+  client:
+    build:
+      context: .
+      dockerfile: app/cmd/client/Dockerfile
+    environment:
+      - CONFIG=/config/config.yaml
+    volumes:
+      - db-data:/app/storage
+      - ./app/cmd/client/tmp:/app/cmd/client/tmp
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth
+      - chat
+    networks:
+      - network
+
+  storage:
+    build:
+      context: .
+      dockerfile: app/cmd/migrator/Dockerfile
+    volumes:
+      - db-data:/app/storage
+      - ./app/storage/dump:/app/storage/dump
+    networks:
+      - network
+
+volumes:
+  db-data:
+
+networks:
+  network:
+    driver: bridge

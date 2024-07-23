@@ -1,10 +1,10 @@
 package app
 
 import (
+	"github.com/Smile8MrBread/Chat/app/internal/app/grpcapp"
 	"github.com/Smile8MrBread/Chat/app/internal/service/auth"
 	"github.com/Smile8MrBread/Chat/app/internal/service/chat"
 	"github.com/Smile8MrBread/Chat/app/internal/storage/sqlite"
-	"github.com/Smile8MrBread/Chat/app/pkg/app/grpcapp"
 	"log/slog"
 	"time"
 )

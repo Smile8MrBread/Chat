@@ -68,6 +68,10 @@ func (s *ServerAPI) AddContact(ctx context.Context, req *chatGrpc.AddContactRequ
 		if errors.Is(err, storage.ErrUserExists) {
 			return nil, status.Error(codes.InvalidArgument, "User already added")
 		}
+		if errors.Is(err, chat.ErrUserNotFound) {
+			return nil, status.Error(codes.InvalidArgument, "User not found")
+		}
+
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 

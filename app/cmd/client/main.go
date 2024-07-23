@@ -19,13 +19,13 @@ func main() {
 
 	log := logger.SetupLogger(cfg.Env)
 
-	connAuth, err := grpc.NewClient(":32100", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connAuth, err := grpc.NewClient("auth:32100", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	defer connAuth.Close()
 	if err != nil {
 		panic(err)
 	}
 
-	connChat, err := grpc.NewClient(":32200", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connChat, err := grpc.NewClient("chat:32200", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	defer connChat.Close()
 	if err != nil {
 		panic(err)

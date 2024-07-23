@@ -33,9 +33,9 @@ func StartServer(log *slog.Logger, r *chi.Mux, authClient authGrpc.AuthClient, c
 	r.Get("/contacts", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "app/cmd/client/frontend/contacts.html")
 	})
-	r.Get("/all-groups", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "app/cmd/client/frontend/all-groups.html")
-	})
+	//r.Get("/all-groups", func(w http.ResponseWriter, r *http.Request) {
+	//	http.ServeFile(w, r, "app/cmd/client/frontend/all-groups.html")
+	//})
 	r.Handle("/tmp/*", http.StripPrefix("/tmp/", http.FileServer(http.Dir("app/cmd/client/tmp"))))
 
 	r.Post("/registration", func(w http.ResponseWriter, r *http.Request) {

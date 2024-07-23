@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/golang-migrate/migrate/v4"
 	"log"
+	"os"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -16,6 +17,14 @@ func main() {
 	flag.StringVar(&storagePath, "storage-path", "", "path to storage")
 	flag.StringVar(&migrationsPath, "migrations-path", "", "path to migrations")
 	flag.Parse()
+
+	if storagePath == "" {
+		storagePath = os.Getenv("STORAGEPATH")
+	}
+
+	if migrationsPath == "" {
+		migrationsPath = os.Getenv("MIGRATIONSPATH")
+	}
 
 	if storagePath == "" {
 		panic("storage path is empty!")

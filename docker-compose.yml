@@ -4,7 +4,7 @@ services:
   auth:
     build:
       context: .
-      dockerfile: app/cmd/services/auth/Dockerfile
+      dockerfile: app/auth_service/cmd/Dockerfile
     volumes:
       - db-data:/app/storage
     expose:
@@ -19,7 +19,7 @@ services:
   chat:
     build:
       context: .
-      dockerfile: app/cmd/services/chat/Dockerfile
+      dockerfile: app/chat_service/cmd/Dockerfile
     volumes:
       - db-data:/app/storage
     expose:
@@ -34,7 +34,7 @@ services:
   client:
     build:
       context: .
-      dockerfile: app/cmd/client/Dockerfile
+      dockerfile: app/client/cmd/Dockerfile
     environment:
       - CONFIG=/config/config.yaml
     volumes:

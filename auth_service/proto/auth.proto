@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package auth;
 
-option go_package = "github.com/Smile8MrBread/Chat/protos/gen/authGrpc";
+option go_package = "github.com/Smile8MrBread/Chat/auth_service/proto/gen;authGrpc";
 
 service Auth {
     rpc Login(LoginRequest) returns (LoginResponse);
     rpc Registration(RegisterRequest) returns (RegisterResponse);
+    rpc IdentUser(IdentUserRequest) returns (IdentUserResponse);
 }
 
 message LoginRequest {
@@ -28,4 +29,15 @@ message RegisterRequest {
 
 message RegisterResponse {
     int64 user_id = 1;
+}
+
+message IdentUserRequest {
+    int64 user_id = 1;
+}
+
+message IdentUserResponse {
+    int64 user_id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string avatar = 4;
 }

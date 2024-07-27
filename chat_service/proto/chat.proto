@@ -23,8 +23,6 @@ service Chat {
     rpc UpdateMessage(UpdateMessageRequest) returns (UpdateMessageResponse);
     rpc AllMessages(AllMessagesRequest) returns (AllMessagesResponse);
     rpc IdentMessage(IdentMessageRequest) returns (IdentMessageResponse);
-
-    rpc IdentUser(IdentUserRequest) returns (IdentUserResponse);
 }
 
 message Nothing {}
@@ -104,17 +102,6 @@ message AllMessagesRequest {
 
 message AllMessagesResponse {
     repeated int64 message_ids = 1;
-}
-
-message IdentUserRequest {
-    int64 user_id = 1;
-}
-
-message IdentUserResponse {
-    int64 user_id = 1;
-    string first_name = 2;
-    string last_name = 3;
-    string avatar = 4;
 }
 
 message AddContactRequest {

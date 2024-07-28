@@ -3,16 +3,19 @@ package grpc
 import (
 	"context"
 	"errors"
+	"github.com/Smile8MrBread/Chat/auth_service/internal/models"
 	"github.com/Smile8MrBread/Chat/auth_service/internal/service"
 	authGrpc "github.com/Smile8MrBread/Chat/auth_service/proto/gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"reflect"
 )
 
 type Auth interface {
 	Login(ctx context.Context, login, password string) (token string, err error)
 	Registration(ctx context.Context, firstName, lastName, login, password, avatar string) (id int64, err error)
+	IdentUser(ctx context.Context, id int64) (models.User, error)
 }
 
 type ServerAPI struct {
@@ -62,6 +65,29 @@ func (s *ServerAPI) Registration(ctx context.Context, req *authGrpc.RegisterRequ
 	}, nil
 }
 
+func (s *ServerAPI) IdentUser(ctx context.Context, req *authGrpc.IdentUserRequest) (*authGrpc.IdentUserResponse, error) {
+	if err := validateIdentUser(req); err != nil {
+		return nil, err
+	}
+
+	user, err := s.auth.IdentUser(ctx, req.GetUserId())
+	if err != nil {
+		//fmt.Println(err, service.ErrUserNotFound, errors.Is(err, service.ErrUserNotFound))
+		if errors.Is(err, service.ErrUserNotFound) {
+			return nil, status.Error(codes.NotFound, "User not found")
+		}
+
+		return nil, status.Errorf(codes.Internal, "Internal error")
+	}
+
+	return &authGrpc.IdentUserResponse{
+		UserId:    user.Id,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Avatar:    user.Avatar,
+	}, nil
+}
+
 func validateLogin(req *authGrpc.LoginRequest) error {
 	if req.GetLogin() == "" || len(req.GetLogin()) > 255 {
 		return status.Error(codes.InvalidArgument, "Invalid login or password")
@@ -91,5 +117,12 @@ func validateRegistration(req *authGrpc.RegisterRequest) error {
 		return status.Error(codes.InvalidArgument, "Invalid last name")
 	}
 
+	return nil
+}
+
+func validateIdentUser(req *authGrpc.IdentUserRequest) error {
+	if reflect.TypeOf(req.GetUserId()).Kind() != reflect.Int64 {
+		return status.Error(codes.InvalidArgument, "Invalid id")
+	}
 	return nil
 }

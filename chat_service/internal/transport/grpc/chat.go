@@ -6,7 +6,7 @@ import (
 	"github.com/Smile8MrBread/Chat/chat_service/internal/models"
 	"github.com/Smile8MrBread/Chat/chat_service/internal/service"
 	"github.com/Smile8MrBread/Chat/chat_service/internal/storage"
-	"github.com/Smile8MrBread/Chat/chat_service/proto/gen"
+	chatGrpc "github.com/Smile8MrBread/Chat/chat_service/proto/gen"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,7 +15,6 @@ import (
 )
 
 type Chat interface {
-	IdentUser(ctx context.Context, id int64) (models.User, error)
 	AddContact(ctx context.Context, id, contactId int64) error
 	AllContacts(ctx context.Context, id int64) ([]int64, error)
 	IsMessaged(ctx context.Context, id, contactId int64) error
@@ -26,39 +25,17 @@ type Chat interface {
 }
 
 type ServerAPI struct {
-	gen.UnimplementedChatServer
+	chatGrpc.UnimplementedChatServer
 	chat Chat
 }
 
 func Register(gRPC *grpc.Server, chatStr Chat) {
-	gen.RegisterChatServer(gRPC, &ServerAPI{
+	chatGrpc.RegisterChatServer(gRPC, &ServerAPI{
 		chat: chatStr,
 	})
 }
 
-func (s *ServerAPI) IdentUser(ctx context.Context, req *gen.IdentUserRequest) (*gen.IdentUserResponse, error) {
-	if err := validateIdentUser(req); err != nil {
-		return nil, err
-	}
-
-	user, err := s.chat.IdentUser(ctx, req.GetUserId())
-	if err != nil {
-		if errors.Is(err, service.ErrUserNotFound) {
-			return nil, status.Error(codes.InvalidArgument, "User not found")
-		}
-
-		return nil, status.Error(codes.Internal, "Internal error")
-	}
-
-	return &gen.IdentUserResponse{
-		UserId:    user.Id,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Avatar:    user.Avatar,
-	}, nil
-}
-
-func (s *ServerAPI) AddContact(ctx context.Context, req *gen.AddContactRequest) (*gen.Nothing, error) {
+func (s *ServerAPI) AddContact(ctx context.Context, req *chatGrpc.AddContactRequest) (*chatGrpc.Nothing, error) {
 	if err := validateAddContact(req); err != nil {
 		return nil, err
 	}
@@ -75,10 +52,10 @@ func (s *ServerAPI) AddContact(ctx context.Context, req *gen.AddContactRequest) 
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &gen.Nothing{}, nil
+	return &chatGrpc.Nothing{}, nil
 }
 
-func (s *ServerAPI) AllContacts(ctx context.Context, req *gen.AllContactsRequest) (*gen.AllContactsResponse, error) {
+func (s *ServerAPI) AllContacts(ctx context.Context, req *chatGrpc.AllContactsRequest) (*chatGrpc.AllContactsResponse, error) {
 	if err := validateAllContacts(req); err != nil {
 		return nil, err
 	}
@@ -91,10 +68,10 @@ func (s *ServerAPI) AllContacts(ctx context.Context, req *gen.AllContactsRequest
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &gen.AllContactsResponse{ContactIds: contacts}, nil
+	return &chatGrpc.AllContactsResponse{ContactIds: contacts}, nil
 }
 
-func (s *ServerAPI) IsMessaged(ctx context.Context, req *gen.IsMessagedRequest) (*gen.Nothing, error) {
+func (s *ServerAPI) IsMessaged(ctx context.Context, req *chatGrpc.IsMessagedRequest) (*chatGrpc.Nothing, error) {
 	if err := validateIsMessaged(req); err != nil {
 		return nil, err
 	}
@@ -107,10 +84,10 @@ func (s *ServerAPI) IsMessaged(ctx context.Context, req *gen.IsMessagedRequest) 
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &gen.Nothing{}, nil
+	return &chatGrpc.Nothing{}, nil
 }
 
-func (s *ServerAPI) AllMessaged(ctx context.Context, req *gen.AllMessagedRequest) (*gen.AllMessagedResponse, error) {
+func (s *ServerAPI) AllMessaged(ctx context.Context, req *chatGrpc.AllMessagedRequest) (*chatGrpc.AllMessagedResponse, error) {
 	if err := validateAllMessaged(req); err != nil {
 		return nil, err
 	}
@@ -123,10 +100,10 @@ func (s *ServerAPI) AllMessaged(ctx context.Context, req *gen.AllMessagedRequest
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &gen.AllMessagedResponse{UserIds: users}, nil
+	return &chatGrpc.AllMessagedResponse{UserIds: users}, nil
 }
 
-func (s *ServerAPI) CreateMessage(ctx context.Context, req *gen.CreateMessageRequest) (*gen.CreateMessageResponse, error) {
+func (s *ServerAPI) CreateMessage(ctx context.Context, req *chatGrpc.CreateMessageRequest) (*chatGrpc.CreateMessageResponse, error) {
 	if err := validateCreateMessage(req); err != nil {
 		return nil, err
 	}
@@ -136,10 +113,10 @@ func (s *ServerAPI) CreateMessage(ctx context.Context, req *gen.CreateMessageReq
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &gen.CreateMessageResponse{MessageId: id}, nil
+	return &chatGrpc.CreateMessageResponse{MessageId: id}, nil
 }
 
-func (s *ServerAPI) IdentMessage(ctx context.Context, req *gen.IdentMessageRequest) (*gen.IdentMessageResponse, error) {
+func (s *ServerAPI) IdentMessage(ctx context.Context, req *chatGrpc.IdentMessageRequest) (*chatGrpc.IdentMessageResponse, error) {
 	if err := validateIdentMessage(req); err != nil {
 		return nil, err
 	}
@@ -163,7 +140,7 @@ func (s *ServerAPI) IdentMessage(ctx context.Context, req *gen.IdentMessageReque
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &gen.IdentMessageResponse{
+	return &chatGrpc.IdentMessageResponse{
 		MessageId: msg.Id,
 		Text:      msg.Text,
 		Date:      msg.Date,
@@ -172,7 +149,7 @@ func (s *ServerAPI) IdentMessage(ctx context.Context, req *gen.IdentMessageReque
 	}, nil
 }
 
-func (s *ServerAPI) AllMessages(ctx context.Context, req *gen.AllMessagesRequest) (*gen.AllMessagesResponse, error) {
+func (s *ServerAPI) AllMessages(ctx context.Context, req *chatGrpc.AllMessagesRequest) (*chatGrpc.AllMessagesResponse, error) {
 	if err := validateAllMessages(req); err != nil {
 		return nil, err
 	}
@@ -186,18 +163,10 @@ func (s *ServerAPI) AllMessages(ctx context.Context, req *gen.AllMessagesRequest
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &gen.AllMessagesResponse{MessageIds: ids}, nil
+	return &chatGrpc.AllMessagesResponse{MessageIds: ids}, nil
 }
 
-func validateIdentUser(req *gen.IdentUserRequest) error {
-	if reflect.TypeOf(req.GetUserId()).Kind() != reflect.Int64 {
-		return status.Error(codes.InvalidArgument, "Invalid id")
-	}
-
-	return nil
-}
-
-func validateAddContact(req *gen.AddContactRequest) error {
+func validateAddContact(req *chatGrpc.AddContactRequest) error {
 	if reflect.TypeOf(req.GetUserId()).Kind() != reflect.Int64 ||
 		reflect.TypeOf(req.GetContactId()).Kind() != reflect.Int64 {
 		return status.Error(codes.InvalidArgument, "Invalid id")
@@ -206,7 +175,7 @@ func validateAddContact(req *gen.AddContactRequest) error {
 	return nil
 }
 
-func validateAllContacts(req *gen.AllContactsRequest) error {
+func validateAllContacts(req *chatGrpc.AllContactsRequest) error {
 	if reflect.TypeOf(req.GetUserId()).Kind() != reflect.Int64 {
 		return status.Error(codes.InvalidArgument, "Invalid id")
 	}
@@ -214,7 +183,7 @@ func validateAllContacts(req *gen.AllContactsRequest) error {
 	return nil
 }
 
-func validateIsMessaged(req *gen.IsMessagedRequest) error {
+func validateIsMessaged(req *chatGrpc.IsMessagedRequest) error {
 	if reflect.TypeOf(req.GetUserId()).Kind() != reflect.Int64 ||
 		reflect.TypeOf(req.GetContactId()).Kind() != reflect.Int64 {
 		return status.Error(codes.InvalidArgument, "Invalid id")
@@ -223,7 +192,7 @@ func validateIsMessaged(req *gen.IsMessagedRequest) error {
 	return nil
 }
 
-func validateAllMessaged(req *gen.AllMessagedRequest) error {
+func validateAllMessaged(req *chatGrpc.AllMessagedRequest) error {
 	if reflect.TypeOf(req.GetUserId()).Kind() != reflect.Int64 {
 		return status.Error(codes.InvalidArgument, "Invalid id")
 	}
@@ -231,7 +200,7 @@ func validateAllMessaged(req *gen.AllMessagedRequest) error {
 	return nil
 }
 
-func validateCreateMessage(req *gen.CreateMessageRequest) error {
+func validateCreateMessage(req *chatGrpc.CreateMessageRequest) error {
 	if reflect.TypeOf(req.GetText()).Kind() != reflect.String &&
 		reflect.TypeOf(req.GetDate()).Kind() != reflect.String &&
 		reflect.TypeOf(req.GetUserTo()).Kind() != reflect.Int64 &&
@@ -242,7 +211,7 @@ func validateCreateMessage(req *gen.CreateMessageRequest) error {
 	return nil
 }
 
-func validateIdentMessage(req *gen.IdentMessageRequest) error {
+func validateIdentMessage(req *chatGrpc.IdentMessageRequest) error {
 	if reflect.TypeOf(req.GetMessageId()).Kind() != reflect.Int64 {
 		return status.Error(codes.InvalidArgument, "Invalid message")
 	}
@@ -250,7 +219,7 @@ func validateIdentMessage(req *gen.IdentMessageRequest) error {
 	return nil
 }
 
-func validateAllMessages(req *gen.AllMessagesRequest) error {
+func validateAllMessages(req *chatGrpc.AllMessagesRequest) error {
 	if reflect.TypeOf(req.GetUserFrom()).Kind() != reflect.Int64 &&
 		reflect.TypeOf(req.GetUserTo()).Kind() != reflect.Int64 {
 		return status.Error(codes.InvalidArgument, "Invalid id")

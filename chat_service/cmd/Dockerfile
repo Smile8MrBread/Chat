@@ -7,24 +7,24 @@ RUN apt-get update && \
 
 WORKDIR /chat_app
 
-COPY go.mod go.sum ./
+COPY chat_service/go.mod chat_service/go.sum ./
 RUN go mod download
 
-COPY ../cmd/services/chat .
+COPY chat_service .
 
-RUN go build -o /chat_service ./app/cmd/services/chat_service/main.go
+RUN go build -o /chat_service ./cmd/main.go
 
 FROM debian:bookworm
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --assume-yes \
-    libsqlite3-0 && \
+    sqlite3 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /chat /usr/bin/chat
-COPY --from=builder /chat_app/app/config/local.yaml /config/config.yaml
+COPY --from=builder /chat_service /usr/bin/chat_service
+COPY --from=builder /chat_app/config/local.yaml /config/config.yaml
 
 EXPOSE 32200
 
-CMD ["/usr/bin/chat"]
+CMD ["/usr/bin/chat_service"]

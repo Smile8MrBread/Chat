@@ -1,5 +1,5 @@
 env: "local"
-storage_path: "storage/chatDb.sqlite3"
+storage_path: "chat_service/storage/chat_service.sqlite3"
 chatGRPC:
   port: 32200
   timeout: 10h

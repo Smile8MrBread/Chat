@@ -24,6 +24,7 @@ type UserSaver interface {
 
 type UserProvider interface {
 	ProvideUser(ctx context.Context, login string) (models.User, error)
+	IdentUser(ctx context.Context, id int64) (models.User, error)
 }
 
 type App struct {
@@ -100,4 +101,24 @@ func (a *App) Registration(ctx context.Context, firstName, lastName, login, pass
 	}
 
 	return id, nil
+}
+
+func (a *App) IdentUser(ctx context.Context, id int64) (models.User, error) {
+	const op = "service.auth.IdentUser"
+
+	log := a.log.With(slog.String("op", op))
+	log.Info("Ident user")
+
+	user, err := a.userProvider.IdentUser(ctx, id)
+	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			log.Error("User not found", slog.String("error", err.Error()))
+			return models.User{}, ErrUserNotFound
+		}
+
+		log.Error("Failed to ident user", slog.String("error", err.Error()))
+		return models.User{}, fmt.Errorf("%s:%w", op, err)
+	}
+
+	return user, nil
 }

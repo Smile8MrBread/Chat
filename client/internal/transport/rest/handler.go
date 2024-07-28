@@ -1,12 +1,15 @@
 package rest
 
 import (
+	"client/internal/models"
+	ws "client/internal/transport/websocket"
 	"encoding/json"
 	"errors"
 	authGrpc "github.com/Smile8MrBread/Chat/auth_service/proto/gen"
 	chatGrpc "github.com/Smile8MrBread/Chat/chat_service/proto/gen"
-	"github.com/Smile8MrBread/Chat/client/internal/models"
-	ws "github.com/Smile8MrBread/Chat/client/internal/transport/websocket"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io"
@@ -22,18 +25,18 @@ import (
 
 func StartServer(log *slog.Logger, r *chi.Mux, authClient authGrpc.AuthClient, chatClient chatGrpc.ChatClient) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "app/cmd/client/frontend/index.html")
+		http.ServeFile(w, r, "client/cmd/frontend/index.html")
 	})
 	r.Get("/all-chats", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "app/cmd/client/frontend/all-chats.html")
+		http.ServeFile(w, r, "client/cmd/frontend/all-chats.html")
 	})
 	r.Get("/contacts", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "app/cmd/client/frontend/contacts.html")
+		http.ServeFile(w, r, "client/cmd/frontend/contacts.html")
 	})
 	//r.Get("/all-groups", func(w http.ResponseWriter, r *http.Request) {
-	//	http.ServeFile(w, r, "app/cmd/client/frontend/all-groups.html")
+	//	http.ServeFile(w, r, "client/cmd/frontend/all-groups.html")
 	//})
-	r.Handle("/tmp/*", http.StripPrefix("/tmp/", http.FileServer(http.Dir("app/cmd/client/tmp"))))
+	r.Handle("/tmp/*", http.StripPrefix("/tmp/", http.FileServer(http.Dir("client/cmd/tmp"))))
 
 	r.Post("/registration", func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseMultipartForm(10 << 20)
@@ -63,7 +66,7 @@ func StartServer(log *slog.Logger, r *chi.Mux, authClient authGrpc.AuthClient, c
 			timeNow := strconv.Itoa(int(time.Now().Unix()))
 			timeNow += strconv.FormatFloat(math.Pow(rand.Float64(), rand.Float64()), 'E', -1, 32)
 
-			myFile, err := os.Create("app/cmd/client/tmp/" + timeNow + filepath.Ext(fileHeader.Filename))
+			myFile, err := os.Create("client/cmd/tmp/" + timeNow + filepath.Ext(fileHeader.Filename))
 			if err != nil {
 				log.Error("Error saving img", slog.String("error", err.Error()))
 				w.WriteHeader(http.StatusConflict)
@@ -303,7 +306,7 @@ func StartServer(log *slog.Logger, r *chi.Mux, authClient authGrpc.AuthClient, c
 
 		users, err := chatClient.AllMessaged(r.Context(), &chatGrpc.AllMessagedRequest{UserId: userId})
 		if err != nil {
-			if errors.Is(err, storage.ErrUserNotFound) {
+			if status.Code(err) == codes.NotFound {
 				log.Error("User not found", slog.String("error", err.Error()))
 				w.WriteHeader(http.StatusConflict)
 				return
@@ -463,12 +466,19 @@ func StartServer(log *slog.Logger, r *chi.Mux, authClient authGrpc.AuthClient, c
 			w.WriteHeader(http.StatusConflict)
 			return
 		}
-		user, err := chatClient.IdentUser(r.Context(), &chatGrpc.IdentUserRequest{UserId: userId})
+		user, err := authClient.IdentUser(r.Context(), &authGrpc.IdentUserRequest{UserId: userId})
 		if err != nil {
-			log.Error("Error user not found", slog.String("error", err.Error()))
+			if status.Code(err) == codes.NotFound {
+				log.Error("Error user not found", slog.String("error", err.Error()))
+				w.WriteHeader(http.StatusConflict)
+				jsonResp, _ := json.Marshal(map[string]string{"message": err.Error()[40:]})
+				w.Write(jsonResp)
+				return
+			}
+
+			log.Error("Error ident user", slog.String("error", err.Error()))
 			w.WriteHeader(http.StatusConflict)
 			return
-
 		}
 		b, err := json.Marshal(user)
 		if err != nil {

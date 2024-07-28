@@ -29,26 +29,6 @@ func (s *Storage) Stop() error {
 	return s.db.Close()
 }
 
-func (s *Storage) IdentUser(ctx context.Context, id int64) (models.User, error) {
-	const op = "storage.sqlite.IdentUser"
-
-	stmt, err := s.db.Prepare("SELECT id, first_name, last_name, avatar FROM Users WHERE id = ?")
-	if err != nil {
-		return models.User{}, fmt.Errorf("%s:%w", op, err)
-	}
-
-	row := stmt.QueryRowContext(ctx, id)
-
-	var user models.User
-	if err = row.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Avatar); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return models.User{}, fmt.Errorf("%s: %w", op, storage.ErrUserNotFound)
-		}
-	}
-
-	return user, nil
-}
-
 func (s *Storage) AddContact(ctx context.Context, id, contactId int64) error {
 	const op = "storage.sqlite.AddContact"
 

@@ -17,7 +17,7 @@ func New(log *slog.Logger, storagePath string, chatPort int) *App {
 		panic(err)
 	}
 
-	chatService := service.New(log, storage, storage, storage)
+	chatService := service.New(log, storage, storage)
 
 	gRPC := grpcapp.New(log, chatService, chatPort)
 

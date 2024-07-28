@@ -1,5 +1,5 @@
 env: "local"
-storage_path: "storage/authDb.sqlite3"
+storage_path: "auth_service/storage/auth_service.sqlite3"
 token_ttl: 1h
 authGRPC:
   port: 32100

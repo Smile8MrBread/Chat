@@ -4,42 +4,58 @@ services:
   auth:
     build:
       context: .
-      dockerfile: app/auth_service/cmd/Dockerfile
-    volumes:
-      - db-data:/app/storage
+      dockerfile: auth_service/cmd/Dockerfile
     expose:
       - "32100"
     depends_on:
-      - storage
+      - auth_db
+    volumes:
+      - auth_db-data:/auth_service/storage
     networks:
       - network
     environment:
       - CONFIG=/config/config.yaml
+  auth_db:
+    build:
+      context: .
+      dockerfile: auth_service/storage/Dockerfile
+    volumes:
+      - auth_db-data:/auth_service/storage
+    networks:
+      - network
 
   chat:
     build:
       context: .
-      dockerfile: app/chat_service/cmd/Dockerfile
+      dockerfile: chat_service/cmd/Dockerfile
     volumes:
-      - db-data:/app/storage
+      - chat_db-data:/chat_service/storage
     expose:
       - "32200"
     depends_on:
-      - storage
+      - auth
+      - chat_db
     networks:
       - network
     environment:
       - CONFIG=/config/config.yaml
+  chat_db:
+    build:
+      context: .
+      dockerfile: chat_service/storage/Dockerfile
+    volumes:
+      - chat_db-data:/chat_service/storage
+    networks:
+      - network
 
   client:
     build:
       context: .
-      dockerfile: app/client/cmd/Dockerfile
+      dockerfile: client/cmd/Dockerfile
     environment:
       - CONFIG=/config/config.yaml
     volumes:
-      - db-data:/app/storage
-      - ./app/cmd/client/tmp:/app/cmd/client/tmp
+      - ./client/cmd/tmp:/client/cmd/tmp
     ports:
       - "8080:8080"
     depends_on:
@@ -48,18 +64,9 @@ services:
     networks:
       - network
 
-  storage:
-    build:
-      context: .
-      dockerfile: app/cmd/migrator/Dockerfile
-    volumes:
-      - db-data:/app/storage
-      - ./app/storage/dump:/app/storage/dump
-    networks:
-      - network
-
 volumes:
-  db-data:
+  auth_db-data:
+  chat_db-data:
 
 networks:
   network:

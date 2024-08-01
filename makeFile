@@ -4,14 +4,3 @@ proto-auth:
 proto-chat:
 	protoc -I chat_service/proto --go_out=chat_service/proto/gen --go_opt=paths=source_relative \
   	--go-grpc_out=chat_service/proto/gen --go-grpc_opt=paths=source_relative ./chat_service/proto/chat.proto
-
-
-chat:
-	go run app/cmd/services/chat/main.go --config=app/config/local.yaml
-auth:
-	go run app/cmd/services/auth/main.go --config=app/config/local.yaml
-client:
-	go run app/cmd/client/main.go --config=app/config/local.yaml
-
-migrate:
-	go run app/cmd/migrator/main.go --storage-path=app/storage/app.sqlite --migrations-path=app/migrations

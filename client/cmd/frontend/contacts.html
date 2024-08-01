@@ -265,20 +265,34 @@
         const res = await fetch("http://localhost:8080/identity/" + cId, {
             method: "GET",
         })
+            .catch(err => console.log(err))
+        console.log(res.status)
         if (res.status === 409) {
             const js = await res.json()
             throw new Error(js.message)
         }
+        if (res.status === 405) {
+            logout()
+        }
+
 
         return res.json()
     }
 
+    let flag = 0;
     (async function () {
         for (const cookie of document.cookie.split("; ")) {
             const parts = cookie.split("=")
             if (parts[0] === "id") {
                 id = parts[1]
             }
+            if (parts[0] === "token") {
+                flag = 1
+            }
+        }
+
+        if (!flag) {
+            logout()
         }
         let user = await fetchIdentUser(id)
         document.getElementById("nameOfUser").innerHTML = `${user.first_name} ${user.last_name}`
@@ -297,19 +311,14 @@
     //         themeIcon.src = 'tmp/moon.svg';
     //     }
 
-        // document.getElementById('toggle-theme').addEventListener('click', () => {
-        //     body.classList.toggle('dark-mode');
-        //     const isDarkMode = body.classList.contains('dark-mode');
-        //     themeIcon.src = isDarkMode ? 'tmp/sun.svg' : 'tmp/moon.svg';
-        //     localStorage.setItem('dark-mode', isDarkMode);
-        // });
+    // document.getElementById('toggle-theme').addEventListener('click', () => {
+    //     body.classList.toggle('dark-mode');
+    //     const isDarkMode = body.classList.contains('dark-mode');
+    //     themeIcon.src = isDarkMode ? 'tmp/sun.svg' : 'tmp/moon.svg';
+    //     localStorage.setItem('dark-mode', isDarkMode);
+    // });
     // });
 
-    function logout() {
-        document.cookie = "token=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"
-        document.cookie = "id=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"
-        window.location.replace("http://localhost:8080/");
-    }
 
     const body = {}
     const form = document.getElementById("form")
@@ -323,6 +332,9 @@
             const js = await res.json()
             throw new Error(js.message)
         }
+        if (res.status === 405) {
+            logout()
+        }
     }
 
     let contactId = 0
@@ -331,9 +343,12 @@
         const res = await fetch("http://localhost:8080/allContacts", {
             method: "GET"
         })
-        if (res.status === 406) {
+        if (res.status === 405) {
             const err = document.getElementById("errNoContacts")
             err.innerHTML = "You don't have any contacts!"
+        }
+        if (res.status === 405) {
+            logout()
         }
 
         return res.json()
@@ -349,7 +364,7 @@
                     </div>
                     <div>
                         <button class="btn btn-primary" onclick="messageContact(${user.user_id})">Message</button>
-                        <button class="btn btn-danger" onclick="removeContact(this)">Remove</button>
+<!--                        <button class="btn btn-danger" onclick="removeContact(this)">Remove</button>-->
                     </div>
                 `;
         contactsList.appendChild(newLi);
@@ -398,15 +413,24 @@
 
     function messageContact(id) {
         (async function () {
-            await fetch("http://localhost:8080/isMessaged/" + id, {
+            const res = await fetch("http://localhost:8080/isMessaged/" + id, {
                 method: "GET"
             })
                 .catch(err => {
                     console.log(err)
                 })
+            if (res.status === 405) {
+                logout()
+            }
 
             window.location.replace("http://localhost:8080/all-chats?isRelocated=true&id=" + id)
         })()
+    }
+
+    function logout() {
+        document.cookie = "token=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"
+        document.cookie = "id=; expires=Thu, 01-Jan-1970 00:00:01 GMT;"
+        window.location.replace("http://localhost:8080/");
     }
 </script>
 </body>

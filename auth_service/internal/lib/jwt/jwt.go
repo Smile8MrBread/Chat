@@ -16,7 +16,7 @@ func NewToken(user models.User, duration time.Duration) (string, error) {
 	claims["avatar"] = user.Avatar
 	claims["first_ame"] = user.FirstName
 	claims["last_name"] = user.LastName
-	claims["exp"] = time.Now().Add(duration).Unix()
+	claims["exp"] = time.Now().Add(duration).Add(time.Hour * 3).Unix()
 
 	tokenString, err := token.SignedString([]byte(models.ReturnSecret()))
 	if err != nil {

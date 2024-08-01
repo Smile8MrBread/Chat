@@ -7,7 +7,6 @@ import (
 	"errors"
 	authGrpc "github.com/Smile8MrBread/Chat/auth_service/proto/gen"
 	chatGrpc "github.com/Smile8MrBread/Chat/chat_service/proto/gen"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc/codes"

@@ -344,19 +344,31 @@
     let id
     let contactId
 
-    (async function () {
+    let flag = 0;
+    (function () {
         for (const cookie of document.cookie.split("; ")) {
             const parts = cookie.split("=")
             if (parts[0] === "id") {
                 id = parts[1]
             }
+            if (parts[0] === "token") {
+                flag = 1
+            }
         }
     })()
+
+    if (!flag) {
+        logout()
+    }
 
     async function fetchAllMessages(id, contactId) {
         const res = await fetch(`http://localhost:8080/allMessages/${id}/${contactId}`, {
             method: "GET",
         })
+        if (res.status === 405) {
+            logout()
+        }
+
         return res.json()
     }
 
@@ -364,6 +376,9 @@
         const res = await fetch(`http://localhost:8080/identMessage/${id}`, {
             method: "GET"
         })
+        if (res.status === 405) {
+            logout()
+        }
 
         return res.json()
     }
@@ -375,6 +390,9 @@
         if (res.status === 409) {
             const js = await res.json()
             throw new Error(js.message)
+        }
+        if (res.status === 405) {
+            logout()
         }
         // .then(res => res.json())
         // .then(res => console.log(res.user_id, res.avatar, res.first_name))
@@ -477,10 +495,13 @@
             body.UserTo = c
             body.Text = messageText
 
-            await fetch("http://localhost:8080/createMessage", {
+            const res = await fetch("http://localhost:8080/createMessage", {
                 method: "POST",
                 body: JSON.stringify(body)
             })
+            if (res.status === 405) {
+                logout()
+            }
 
             socket.send(JSON.stringify({
                 "From": id,
@@ -518,6 +539,9 @@
             method: "GET"
         })
             .then(resp => resp.json())
+        if (res.status === 405) {
+            logout()
+        }
 
         const chatList = document.getElementById("chats-list")
         for (let i = 0; i < res.user_ids.length; i++) {

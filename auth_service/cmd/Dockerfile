@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY auth_service .
 
-RUN go build -o /auth_service ./cmd/main.go
+RUN go build  -o /auth_service ./cmd/main.go
 
 FROM debian:bookworm
 

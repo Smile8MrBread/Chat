@@ -6,7 +6,6 @@ import (
 	"client/internal/transport/rest"
 	authGrpc "github.com/Smile8MrBread/Chat/auth_service/proto/gen"
 	chatGrpc "github.com/Smile8MrBread/Chat/chat_service/proto/gen"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"google.golang.org/grpc"

@@ -2,6 +2,7 @@ package rest
 
 import (
 	"client/internal/models"
+	"client/internal/transport/kafka/producer"
 	ws "client/internal/transport/websocket"
 	"encoding/json"
 	"errors"
@@ -22,7 +23,9 @@ import (
 	"time"
 )
 
-func StartServer(log *slog.Logger, r *chi.Mux, authClient authGrpc.AuthClient, chatClient chatGrpc.ChatClient) {
+func StartServer(log *slog.Logger, r *chi.Mux,
+	authClient authGrpc.AuthClient, chatClient chatGrpc.ChatClient,
+	p *producer.OrderProducer) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "client/cmd/frontend/index.html")
 	})
@@ -328,7 +331,6 @@ func StartServer(log *slog.Logger, r *chi.Mux, authClient authGrpc.AuthClient, c
 	})
 	r.Post("/createMessage", func(w http.ResponseWriter, r *http.Request) {
 		buf := make([]byte, 1024)
-		data := models.Message{}
 
 		n, err := r.Body.Read(buf)
 		if err != nil {
@@ -339,48 +341,9 @@ func StartServer(log *slog.Logger, r *chi.Mux, authClient authGrpc.AuthClient, c
 			}
 		}
 
-		err = json.Unmarshal(buf[:n], &data)
-		if err != nil {
-			log.Error("Error parsing json", slog.String("error", err.Error()))
-			w.WriteHeader(http.StatusConflict)
-			return
+		if err = p.MessOrder(buf[:n]); err != nil {
+			log.Error("Error mess order kafka", slog.String("error", err.Error()))
 		}
-
-		userId, err := strconv.Atoi(data.UserFrom)
-		if err != nil {
-			log.Error("Error convert string", slog.String("error", err.Error()))
-			w.WriteHeader(http.StatusConflict)
-			return
-		}
-		contactId, err := strconv.Atoi(data.UserTo)
-		if err != nil {
-			log.Error("Error convert string", slog.String("error", err.Error()))
-			w.WriteHeader(http.StatusConflict)
-			return
-		}
-
-		id, err := chatClient.CreateMessage(r.Context(),
-			&chatGrpc.CreateMessageRequest{UserFrom: int64(userId), UserTo: int64(contactId), Date: data.Date, Text: data.Text})
-		if err != nil {
-			if status.Code(err) == codes.InvalidArgument {
-				log.Error("Invalid message", slog.String("error", err.Error()))
-				w.WriteHeader(http.StatusConflict)
-				return
-			}
-
-			log.Error("Failed to create message", slog.String("error", err.Error()))
-			w.WriteHeader(http.StatusConflict)
-			return
-		}
-
-		resp, err := json.Marshal(id)
-		if err != nil {
-			log.Error("Failed to marshal", slog.String("error", err.Error()))
-			w.WriteHeader(http.StatusConflict)
-			return
-		}
-
-		w.Write(resp)
 	})
 	r.Get("/identMessage/{id}", func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")

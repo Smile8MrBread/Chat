@@ -18,10 +18,12 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.44.1 --name UserSaver
 type UserSaver interface {
 	SaveUser(ctx context.Context, firstName, lastName, login, avatar string, passHash []byte) (int64, error)
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.44.1 --name UserProvider
 type UserProvider interface {
 	ProvideUser(ctx context.Context, login string) (models.User, error)
 	IdentUser(ctx context.Context, id int64) (models.User, error)

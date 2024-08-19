@@ -3,6 +3,7 @@ package main
 import (
 	"client/internal/config"
 	"client/internal/logger"
+	"client/internal/transport/kafka/producer"
 	"client/internal/transport/rest"
 	authGrpc "github.com/Smile8MrBread/Chat/auth_service/proto/gen"
 	chatGrpc "github.com/Smile8MrBread/Chat/chat_service/proto/gen"
@@ -10,6 +11,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+)
+
+var (
+	broker = "kafka:9092"
+	topic  = "createMess"
 )
 
 func main() {
@@ -31,8 +37,14 @@ func main() {
 		panic(err)
 	}
 
+	p, err := producer.Init(broker, "1", topic)
+
+	if err != nil {
+		panic(err)
+	}
+
 	authClient := authGrpc.NewAuthClient(connAuth)
 	chatClient := chatGrpc.NewChatClient(connChat)
 
-	rest.StartServer(log, r, authClient, chatClient)
+	rest.StartServer(log, r, authClient, chatClient, p)
 }

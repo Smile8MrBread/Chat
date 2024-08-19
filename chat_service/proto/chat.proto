@@ -7,93 +7,93 @@ option go_package = "github.com/Smile8MrBread/Chat/protos/gen/chatGrpc";
 
 service Chat {
     rpc AddContact(AddContactRequest) returns (Nothing);
-    rpc DeleteContact(DeleteContactRequest) returns (Nothing);
+//    rpc DeleteContact(DeleteContactRequest) returns (Nothing);
     rpc AllContacts(AllContactsRequest) returns (AllContactsResponse);
     rpc IsMessaged(IsMessagedRequest) returns (Nothing);
     rpc AllMessaged(AllMessagedRequest) returns (AllMessagedResponse);
 
-    rpc Create(CreateRequest) returns (CreateResponse);
-    rpc Delete(DeleteRequest) returns (DeleteResponse);
-    rpc Update(UpdateRequest) returns (UpdateResponse);
-    rpc ClearHistory(ClearHistoryRequest) returns (Nothing);
-    rpc AllUserChats(AllUserChatsRequest) returns (AllUserChatsResponse);
-    rpc AllChats(Nothing) returns (AllChatsResponse);
+//    rpc Create(CreateRequest) returns (CreateResponse);
+//    rpc Delete(DeleteRequest) returns (DeleteResponse);
+//    rpc Update(UpdateRequest) returns (UpdateResponse);
+//    rpc ClearHistory(ClearHistoryRequest) returns (Nothing);
+//    rpc AllUserChats(AllUserChatsRequest) returns (AllUserChatsResponse);
+//    rpc AllChats(Nothing) returns (AllChatsResponse);
 
-    rpc CreateMessage(CreateMessageRequest) returns (CreateMessageResponse);
-    rpc UpdateMessage(UpdateMessageRequest) returns (UpdateMessageResponse);
+//    rpc CreateMessage(CreateMessageRequest) returns (CreateMessageResponse);
+//    rpc UpdateMessage(UpdateMessageRequest) returns (UpdateMessageResponse);
     rpc AllMessages(AllMessagesRequest) returns (AllMessagesResponse);
     rpc IdentMessage(IdentMessageRequest) returns (IdentMessageResponse);
 }
 
 message Nothing {}
+//
+//message CreateRequest {
+//    string name = 1;
+//    string preview = 2;
+//    string avatar = 3;
+//    int64 user_id = 4;
+//}
+//
+//message CreateResponse {
+//    int64 chat_id = 1;
+//}
+//
+//message DeleteRequest {
+//    int64 chat_id = 1;
+//}
+//
+//message DeleteResponse {
+//    bool is_deleted = 1;
+//}
+//
+//message UpdateRequest {
+//    string name = 1;
+//    string preview = 2;
+//    string avatar = 3;
+//    int64 chat_id = 4;
+//}
+//
+//message UpdateResponse {
+//    bool is_updated = 1;
+//}
+//
+//message ClearHistoryRequest {
+//    int64 chat_id = 1;
+//}
+//
+//message AllChatsResponse {
+//    repeated int64 chat_ids = 1;
+//}
+//
+//message AllUserChatsRequest {
+//    int64 user_id = 1;
+//}
+//
+//message AllUserChatsResponse {
+//    repeated int64 chat_ids = 1;
+//}
 
-message CreateRequest {
-    string name = 1;
-    string preview = 2;
-    string avatar = 3;
-    int64 user_id = 4;
-}
-
-message CreateResponse {
-    int64 chat_id = 1;
-}
-
-message DeleteRequest {
-    int64 chat_id = 1;
-}
-
-message DeleteResponse {
-    bool is_deleted = 1;
-}
-
-message UpdateRequest {
-    string name = 1;
-    string preview = 2;
-    string avatar = 3;
-    int64 chat_id = 4;
-}
-
-message UpdateResponse {
-    bool is_updated = 1;
-}
-
-message ClearHistoryRequest {
-    int64 chat_id = 1;
-}
-
-message AllChatsResponse {
-    repeated int64 chat_ids = 1;
-}
-
-message AllUserChatsRequest {
-    int64 user_id = 1;
-}
-
-message AllUserChatsResponse {
-    repeated int64 chat_ids = 1;
-}
-
-message CreateMessageRequest {
-    string text = 1;
+//message CreateMessageRequest {
+//    string text = 1;
+////    string avatar = 2;
+//    string date = 2;
+//    int64 user_from = 3;
+//    int64 user_to = 4;
+//}
+//
+//message CreateMessageResponse {
+//    int64 message_id = 1;
+//}
+//
+//message UpdateMessageRequest {
+//    string text = 1;
 //    string avatar = 2;
-    string date = 2;
-    int64 user_from = 3;
-    int64 user_to = 4;
-}
-
-message CreateMessageResponse {
-    int64 message_id = 1;
-}
-
-message UpdateMessageRequest {
-    string text = 1;
-    string avatar = 2;
-    int64 message_id = 3;
-}
-
-message UpdateMessageResponse {
-    bool is_updated = 1;
-}
+//    int64 message_id = 3;
+//}
+//
+//message UpdateMessageResponse {
+//    bool is_updated = 1;
+//}
 
 message AllMessagesRequest {
     int64 user_from = 1;
@@ -108,11 +108,11 @@ message AddContactRequest {
     int64 user_id = 1;
     int64 contact_id = 2;
 }
-
-message DeleteContactRequest {
-    int64 user_id = 1;
-    int64 deleted_id = 2;
-}
+//
+//message DeleteContactRequest {
+//    int64 user_id = 1;
+//    int64 deleted_id = 2;
+//}
 
 message AllContactsRequest {
     int64 user_id = 1;

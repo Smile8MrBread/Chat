@@ -5,7 +5,7 @@ go 1.22.3
 require (
 	github.com/Smile8MrBread/Chat/auth_service v0.0.0-20240727170440-170f1d16f963
 	github.com/Smile8MrBread/Chat/chat_service v0.0.0-20240727170440-170f1d16f963
-	github.com/Smile8MrBread/Chat/client v0.0.0-20240727170440-170f1d16f963
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/gorilla/websocket v1.5.3

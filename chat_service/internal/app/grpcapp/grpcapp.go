@@ -3,6 +3,7 @@ package grpcapp
 import (
 	"fmt"
 	chatgrpc "github.com/Smile8MrBread/Chat/chat_service/internal/transport/grpc"
+	"github.com/Smile8MrBread/Chat/chat_service/internal/transport/kafka/consumer"
 	"google.golang.org/grpc"
 	"log/slog"
 	"net"
@@ -13,9 +14,10 @@ type App struct {
 	log      *slog.Logger
 	chat     *grpc.Server
 	chatPort int
+	coc      *consumer.OrderConsumer
 }
 
-func New(log *slog.Logger, chatServ chatgrpc.Chat, chatPort int) *App {
+func New(log *slog.Logger, chatServ chatgrpc.Chat, chatPort int, coc *consumer.OrderConsumer) *App {
 	grpcServ := grpc.NewServer()
 
 	chatgrpc.Register(grpcServ, chatServ)
@@ -24,6 +26,7 @@ func New(log *slog.Logger, chatServ chatgrpc.Chat, chatPort int) *App {
 		log:      log,
 		chat:     grpcServ,
 		chatPort: chatPort,
+		coc:      coc,
 	}
 }
 
@@ -45,6 +48,8 @@ func (a *App) runChat() error {
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
+
+	a.coc.Init("createMess", a.log)
 
 	a.log.Info("Chat server is running", slog.String("address", l.Addr().String()))
 
